@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-upgradeable/finance/PaymentSplitterUpgradeable.s
 import "hardhat/console.sol";
 
 
-contract MyToken is 
+contract PaySplitter is 
 Initializable, 
 AccessControlUpgradeable, 
 UUPSUpgradeable,
