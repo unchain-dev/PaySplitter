@@ -7,12 +7,11 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/finance/PaymentSplitterUpgradeable.sol";
 import "hardhat/console.sol";
 
-
-contract PaySplitter is 
-Initializable, 
-AccessControlUpgradeable, 
-UUPSUpgradeable,
-PaymentSplitterUpgradeable
+contract PaySplitter is
+    Initializable,
+    AccessControlUpgradeable,
+    UUPSUpgradeable,
+    PaymentSplitterUpgradeable
 {
     bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
 
@@ -21,7 +20,7 @@ PaymentSplitterUpgradeable
         _disableInitializers();
     }
 
-    function initialize() initializer public {
+    function initialize() public initializer {
         // __PaymentSplitter_init(__payeeAddresslist[], shareslist[]);
         __AccessControl_init();
         __UUPSUpgradeable_init();
@@ -32,11 +31,9 @@ PaymentSplitterUpgradeable
 
     function _authorizeUpgrade(address newImplementation)
         internal
-        onlyRole(UPGRADER_ROLE)
         override
-    {
-
-    }
+        onlyRole(UPGRADER_ROLE)
+    {}
 
     // The following functions are overrides required by Solidity.
 
@@ -47,5 +44,13 @@ PaymentSplitterUpgradeable
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
+    }
+
+    function deposit() public payable {
+        require(msg.value > 0, "The value must be bigger than 0");
+    }
+
+    function balance() public view returns (uint256) {
+        return (address(this).balance);
     }
 }
