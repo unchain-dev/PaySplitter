@@ -1,7 +1,7 @@
 // We import Chai to use its asserting functions here.
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Contract } from "ethers";
+import { BigNumber, Contract } from "ethers";
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them
@@ -58,26 +58,18 @@ describe("PaySplitter contract", function () {
      expect(await contract.hasRole(adminRole, owner.address)).to.equal(true);
      expect(await contract.hasRole(upgraderRole, owner.address)).to.equal(true);
    });
-   
-//    it("Should assign the total supply of tokens to the owner", async function () {
-//      const ownerBalance = await contract.balanceOf(owner.address);
-//      expect(await contract.totalSupply()).to.equal(ownerBalance);
-//    });
  });
  
-//  describe("Transactions", function () {
+ describe("Transactions", function () {
    
-//    it("Should transfer tokens between accounts", async function () {
-//      // Transfer 50 tokens from owner to addr1
-//      await contract.transfer(addr1.address, 50);
-//      const addr1Balance = await contract.balanceOf(addr1.address);
-//      expect(addr1Balance).to.equal(50);
-//      // Transfer 50 tokens from addr1 to addr2
-//      // We use .connect(signer) to send a transaction from another account
-//      await contract.connect(addr1).transfer(addr2.address, 50);
-//      const addr2Balance = await contract.balanceOf(addr2.address);
-//      expect(addr2Balance).to.equal(50);
-//    });
+   it("Should deposit properly", async function () {
+	 let etherString: string = "1";
+	 let wei: BigNumber = ethers.utils.parseEther(etherString)
+     await contract.deposit({
+		 value: wei
+	 });
+     expect(await contract.totalBalance()).to.equal(wei);
+   });
    
 //    it("Should fail if sender doesn’t have enough tokens", async function () {
 //      const initialOwnerBalance = await contract.balanceOf(owner.address);
@@ -106,5 +98,5 @@ describe("PaySplitter contract", function () {
 //      const addr2Balance = await contract.balanceOf(addr2.address);
 //      expect(addr2Balance).to.equal(50);
 //    });
-//  });
+ });
 });
