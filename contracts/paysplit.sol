@@ -221,7 +221,10 @@ contract PaySplitter is
             account != address(0),
             "PaySplitter: account is the zero address"
         );
-        require(weight_ > 0, "PaySplitter: weights are 0");
+        require(
+            weight_ > 0 && weight_ <= 10000,
+            "PaySplitter: 0 < weight <= 10000"
+        );
         require(
             _payee[account].weight == 0,
             "PaySplitter: account already has weights"
