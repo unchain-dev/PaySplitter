@@ -48,6 +48,10 @@ describe("PaySplitter contract", function () {
    it("Should set the right totalWeights", async function () {
      expect(await contract.totalWeights()).to.equal(ownerWeight + weight1);
    });
+   it("Should set the right address", async function () {
+     expect(await contract.payee(0)).to.equal(owner.address);
+     expect(await contract.payee(1)).to.equal(addr1.address);
+   });
    
 //    it("Should assign the total supply of tokens to the owner", async function () {
 //      const ownerBalance = await contract.balanceOf(owner.address);
