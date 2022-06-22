@@ -52,6 +52,12 @@ describe("PaySplitter contract", function () {
      expect(await contract.payee(0)).to.equal(owner.address);
      expect(await contract.payee(1)).to.equal(addr1.address);
    });
+   it("Should set the right role", async function () {
+	 const adminRole = await contract.DEFAULT_ADMIN_ROLE();
+	 const upgraderRole = await contract.UPGRADER_ROLE();
+     expect(await contract.hasRole(adminRole, owner.address)).to.equal(true);
+     expect(await contract.hasRole(upgraderRole, owner.address)).to.equal(true);
+   });
    
 //    it("Should assign the total supply of tokens to the owner", async function () {
 //      const ownerBalance = await contract.balanceOf(owner.address);
