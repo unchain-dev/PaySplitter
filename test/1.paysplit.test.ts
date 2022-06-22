@@ -35,25 +35,17 @@ describe("PaySplitter contract", function () {
    // Get the ContractFactory and Signers here.
    PaySplitter = await ethers.getContractFactory("PaySplitter");
    [owner, addr1, addr2, addr3, ...addrs] = await ethers.getSigners();
-   // To deploy our contract, we just have to call PaySplitter.deploy() and await
-   // for it to be deployed(), which happens once its transaction has been
-   // mined.
+
    contract = await PaySplitter.deploy([owner.address, addr1.address], [ownerWeight,weight1]);
  });
- // You can nest describe calls to create subsections.
  
  describe("Deployment", function () {
-   // `it` is another Mocha function. This is the one you use to define your
-   // tests. It receives the test name, and a callback function.
-   // If the callback function is async, Mocha will `await` it.
    
-   it("Should set the right totalWeights", async function () {
-     // Expect receives a value, and wraps it in an Assertion object. These
-     // objects have a lot of utility methods to assert values.
-     // This test expects the owner variable stored in the contract to be equal
-     // to our Signer's owner.
+   it("Should set the right each weights", async function () {
      expect(await contract.weight(owner.address)).to.equal(ownerWeight);
      expect(await contract.weight(addr1.address)).to.equal(weight1);
+   });
+   it("Should set the right totalWeights", async function () {
      expect(await contract.totalWeights()).to.equal(ownerWeight + weight1);
    });
    
