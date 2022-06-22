@@ -144,6 +144,7 @@ contract PaySplitter is
             if (_payeesList[i] == account) {
                 _payeesList[i] = _payeesList[payeesLen - 1];
                 _payeesList.pop();
+                break;
             }
         }
     }
