@@ -87,11 +87,6 @@ contract PaySplitter is
         }
     }
 
-    /// @dev Return `true` if the account belongs to the admin role.
-    function isAdmin(address _account) public view virtual returns (bool) {
-        return hasRole(DEFAULT_ADMIN_ROLE, _account);
-    }
-
     /**
      * @dev Creates an instance of `PaySplitter` where each account in `payees` is assigned the number of weights at
      * the matching position in the `weights` array.
@@ -119,6 +114,31 @@ contract PaySplitter is
         for (uint256 i = 0; i < payees.length; i++) {
             _addPayee(payees[i], weight_[i]);
         }
+    }
+
+    /**
+     * @dev Add a new payee to the contract.
+     * @param account The address of the payee to add.
+     * @param weight_ The number of weights owned by the payee.
+     */
+    function _addPayee(address account, uint256 weight_) private {
+        require(
+            account != address(0),
+            "PaySplitter: account is the zero address"
+        );
+        require(
+            weight_ > 0 && weight_ <= 10000,
+            "PaySplitter: 0 < weight <= 10000"
+        );
+        require(
+            _payee[account].weight == 0,
+            "PaySplitter: account already has weights"
+        );
+
+        _payeesList.push(account);
+        _payee[account].weight = weight_;
+        _totalWeights += weight_;
+        emit PayeeAdded(account, weight_);
     }
 
     function deletePayee(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -209,31 +229,6 @@ contract PaySplitter is
         AddressUpgradeable.sendValue(account, payment);
         _payee[account].balance = 0;
         emit PaymentReleased(account, payment);
-    }
-
-    /**
-     * @dev Add a new payee to the contract.
-     * @param account The address of the payee to add.
-     * @param weight_ The number of weights owned by the payee.
-     */
-    function _addPayee(address account, uint256 weight_) private {
-        require(
-            account != address(0),
-            "PaySplitter: account is the zero address"
-        );
-        require(
-            weight_ > 0 && weight_ <= 10000,
-            "PaySplitter: 0 < weight <= 10000"
-        );
-        require(
-            _payee[account].weight == 0,
-            "PaySplitter: account already has weights"
-        );
-
-        _payeesList.push(account);
-        _payee[account].weight = weight_;
-        _totalWeights += weight_;
-        emit PayeeAdded(account, weight_);
     }
 
     /**
