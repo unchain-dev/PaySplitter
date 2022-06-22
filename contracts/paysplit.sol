@@ -129,13 +129,17 @@ contract PaySplitter is
             _payee[account].balance == 0,
             "PaySplitter: There is balance in the account"
         );
-        deleteAddress(account, payeesLen);
+        require(
+            _payee[account].weight > 0,
+            "PaySplitter: account has no weights"
+        );
+        _deleteAddress(account, payeesLen);
         _totalWeights -= _payee[account].weight;
         delete _payee[account];
     }
 
     // unordered
-    function deleteAddress(address account, uint256 payeesLen) private {
+    function _deleteAddress(address account, uint256 payeesLen) private {
         for (uint256 i = 0; i < payeesLen; i++) {
             if (_payeesList[i] == account) {
                 _payeesList[i] = _payeesList[payeesLen - 1];
