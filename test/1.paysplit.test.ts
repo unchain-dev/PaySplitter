@@ -61,7 +61,7 @@ describe("PaySplitter contract", function () {
 		});
 	});
 
-	describe("Transactions cummon", function () {
+	describe("Transactions common", function () {
 
 		it("Should deposit properly", async function () {
 			let etherString: string = "1";
