@@ -66,9 +66,10 @@ describe("PaySplitter contract", function () {
 		it("Should deposit properly", async function () {
 			let etherString: string = "1";
 			let wei: BigNumber = ethers.utils.parseEther(etherString)
-			await contract.deposit({
+			let tx =await contract.deposit({
 					value: wei
 				});
+			await tx.wait();
 			expect(await contract.totalBalance()).to.equal(wei);
 			
 			let totalWeight: number = ownerWeight + weight1;
@@ -81,12 +82,21 @@ describe("PaySplitter contract", function () {
 		});
 
 		it("Should add payees properly", async function () {
-			await contract.addPayee([addr2.address, addr3.address], [weight2, weight3]);
+			let tx = await contract.addPayee([addr2.address, addr3.address], [weight2, weight3]);
+			await tx.wait();
 			expect(await contract.totalWeights()).to.equal(ownerWeight + weight1 + weight2 + weight3);
 			expect(await contract.weight(addr2.address)).to.equal(weight2);
 			expect(await contract.weight(addr3.address)).to.equal(weight3);
 			expect(await contract.payee(2)).to.equal(addr2.address);
 			expect(await contract.payee(3)).to.equal(addr3.address);
+		});
+
+		it("Should delete a payee properly", async function () {
+			let tx = await contract.deletePayee(addr1.address);
+			await tx.wait();
+			expect(await contract.totalWeights()).to.equal(ownerWeight);
+			expect(await contract.balance(addr1.address)).to.equal(0);
+			expect(await contract.weight(addr1.address)).to.equal(0);
 		});
 
 		it("Should release properly", async function () {
@@ -102,7 +112,7 @@ describe("PaySplitter contract", function () {
 			wei = await calculateBalance(etherString, totalWeight, ownerWeight);
 			// let beforeReleaseBalance = await owner.getBalance();
 			tx = await contract.release();
-			// receipt = await tx.wait();
+			receipt = await tx.wait();
 			// let releaseGasUsed = receipt.gasUsed;
 			// expect(await addWei(await owner.getBalance(), releaseGasUsed)).to.equal(await addWei(beforeReleaseBalance, wei))
 			expect(await contract.balance(owner.address)).to.equal(0);
