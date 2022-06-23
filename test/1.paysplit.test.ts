@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { BigNumber, Contract } from "ethers";
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { calculateBalance } from './utils/calculate'
+import { calculateBalance, subtracteWei, addWei } from './utils/calculate'
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them
 // easier. All Mocha functions are available in the global scope.
@@ -67,8 +67,8 @@ describe("PaySplitter contract", function () {
 			let etherString: string = "1";
 			let wei: BigNumber = ethers.utils.parseEther(etherString)
 			await contract.deposit({
-				value: wei
-			});
+					value: wei
+				});
 			expect(await contract.totalBalance()).to.equal(wei);
 			
 			let totalWeight: number = ownerWeight + weight1;
@@ -87,6 +87,27 @@ describe("PaySplitter contract", function () {
 			expect(await contract.weight(addr3.address)).to.equal(weight3);
 			expect(await contract.payee(2)).to.equal(addr2.address);
 			expect(await contract.payee(3)).to.equal(addr3.address);
+		});
+
+		it("Should release properly", async function () {
+			let etherString: string = "1";
+			let wei: BigNumber = ethers.utils.parseEther(etherString);
+			let tx = await contract.deposit({
+				value: wei
+			});
+			let receipt = await tx.wait();
+			let totalBalance: BigNumber = await contract.totalBalance();
+			let totalWeight: number = ownerWeight + weight1;
+
+			wei = await calculateBalance(etherString, totalWeight, ownerWeight);
+			// let beforeReleaseBalance = await owner.getBalance();
+			tx = await contract.release();
+			// receipt = await tx.wait();
+			// let releaseGasUsed = receipt.gasUsed;
+			// expect(await addWei(await owner.getBalance(), releaseGasUsed)).to.equal(await addWei(beforeReleaseBalance, wei))
+			expect(await contract.balance(owner.address)).to.equal(0);
+	
+			expect(await contract.totalBalance()).to.equal(await subtracteWei(totalBalance, wei));
 		});
 
 	//    it("Should fail if sender doesn’t have enough tokens", async function () {
