@@ -61,7 +61,7 @@ describe("PaySplitter contract", function () {
 		});
 	});
 
-	describe("Transactions", function () {
+	describe("Transactions cummon", function () {
 
 		it("Should deposit properly", async function () {
 			let etherString: string = "1";
@@ -78,6 +78,15 @@ describe("PaySplitter contract", function () {
 			wei = await calculateBalance(etherString, totalWeight, weight1);
 			expect(await contract.balance(addr1.address)).to.equal(wei);
 
+		});
+
+		it("Should add payees properly", async function () {
+			await contract.addPayee([addr2.address, addr3.address], [weight2, weight3]);
+			expect(await contract.totalWeights()).to.equal(ownerWeight + weight1 + weight2 + weight3);
+			expect(await contract.weight(addr2.address)).to.equal(weight2);
+			expect(await contract.weight(addr3.address)).to.equal(weight3);
+			expect(await contract.payee(2)).to.equal(addr2.address);
+			expect(await contract.payee(3)).to.equal(addr3.address);
 		});
 
 	//    it("Should fail if sender doesn’t have enough tokens", async function () {
