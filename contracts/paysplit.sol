@@ -179,6 +179,7 @@ contract PaySplitter is
      * functions].
      */
     receive() external payable virtual {
+        deposit();
         emit PaymentReceived(_msgSender(), msg.value);
     }
 
