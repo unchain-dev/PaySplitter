@@ -66,7 +66,7 @@ describe("PaySplitter contract", function () {
 		it("Should deposit properly", async function () {
 			let etherString: string = "1";
 			let wei: BigNumber = ethers.utils.parseEther(etherString)
-			let tx =await contract.deposit({
+			let tx = await contract.deposit({
 					value: wei
 				});
 			await tx.wait();
@@ -119,19 +119,30 @@ describe("PaySplitter contract", function () {
 	
 			expect(await contract.totalBalance()).to.equal(await subtracteWei(totalBalance, wei));
 		});
+	});
 
-	//    it("Should fail if sender doesn’t have enough tokens", async function () {
-	//      const initialOwnerBalance = await contract.balanceOf(owner.address);
-	//      // Try to send 1 token from addr1 (0 tokens) to owner (1000000 tokens).
-	//      // `require` will evaluate false and revert the transaction.
-	//      await expect(
-	//        contract.connect(addr1).transfer(owner.address, 1)
-	//      ).to.be.revertedWith("Not enough tokens");
-	//      // Owner balance shouldn't have changed.
-	//      expect(await contract.balanceOf(owner.address)).to.equal(
-	//        initialOwnerBalance
-	//      );
-	//    });
+	describe("Transactions revert", function () {
+
+		it("Should fail if sender doesn’t send enough eth", async function () {
+			let etherString: string = "0";
+			await expect(
+			contract.deposit({
+				value: ethers.utils.parseEther(etherString)
+			})
+			).to.be.revertedWith("The value must be bigger than 0");
+		});
+		it("Should fail if there is no payees when deposit", async function () {
+			let tx = await contract.deletePayee(owner.address);
+			await tx.wait()
+			tx = await contract.deletePayee(addr1.address);
+			await tx.wait()
+			let etherString: string = "1";
+			await expect(
+			contract.deposit({
+				value: ethers.utils.parseEther(etherString)
+			})
+			).to.be.revertedWith("You need one payee at least");
+		});
 
 	//    it("Should update balances after transfers", async function () {
 	//      const initialOwnerBalance = await contract.balanceOf(owner.address);
