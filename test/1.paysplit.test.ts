@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { BigNumber, Contract } from "ethers";
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { calculateBalance, subtracteWei, addWei } from './utils/calculate'
+import { string } from "hardhat/internal/core/params/argumentTypes";
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them
 // easier. All Mocha functions are available in the global scope.
@@ -130,6 +131,12 @@ describe("PaySplitter contract", function () {
 				value: ethers.utils.parseEther(etherString)
 			})
 			).to.be.revertedWith("The value must be bigger than 0");
+			await expect(
+				addr1.sendTransaction({
+					to: contract.address,
+					value: ethers.utils.parseEther(etherString)
+				})
+			).to.be.revertedWith("The value must be bigger than 0");
 		});
 		it("Should fail if there is no payees when deposit", async function () {
 			let tx = await contract.deletePayee(owner.address);
@@ -143,20 +150,5 @@ describe("PaySplitter contract", function () {
 			})
 			).to.be.revertedWith("You need one payee at least");
 		});
-
-	//    it("Should update balances after transfers", async function () {
-	//      const initialOwnerBalance = await contract.balanceOf(owner.address);
-	//      // Transfer 100 tokens from owner to addr1.
-	//      await contract.transfer(addr1.address, 100);
-	//      // Transfer another 50 tokens from owner to addr2.
-	//      await contract.transfer(addr2.address, 50);
-	//      // Check balances.
-	//      const finalOwnerBalance = await contract.balanceOf(owner.address);
-	//      expect(finalOwnerBalance).to.equal(initialOwnerBalance - 150);
-	//      const addr1Balance = await contract.balanceOf(addr1.address);
-	//      expect(addr1Balance).to.equal(100);
-	//      const addr2Balance = await contract.balanceOf(addr2.address);
-	//      expect(addr2Balance).to.equal(50);
-	//    });
 	});
 });
