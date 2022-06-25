@@ -159,5 +159,13 @@ describe("PaySplitter contract", function () {
 				contract.connect(addr1).addPayee([addr2.address, addr3.address], [3,4])
 				).to.be.revertedWith(errMsg);
 		});
+		it("Should fail if admin tries to do addPayee with diffrent length args", async function () {
+			await expect(
+				contract.addPayee([addr2.address, addr3.address], [3,4,5])
+				).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
+			await expect(
+				contract.addPayee([addr1.address, addr2.address, addr3.address], [3,4])
+				).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
+		});
 	});
 });
