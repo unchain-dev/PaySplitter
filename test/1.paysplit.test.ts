@@ -167,5 +167,18 @@ describe("PaySplitter contract", function () {
 				contract.addPayee([addr1.address, addr2.address, addr3.address], [3,4])
 				).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
 		});
+		it("Should fail if admin tries to do addPayee with the address already added", async function () {
+			await expect(
+				contract.addPayee([addr2.address, addr1.address], [3,4])
+				).to.be.revertedWith("PaySplitter: account already has weights");
+			await expect(
+				contract.addPayee([owner.address], [4])
+				).to.be.revertedWith("PaySplitter: account already has weights");
+			let tx = await contract.addPayee([addr2.address, addr3.address], [3,4]);
+			await tx.wait();
+			await expect(
+				contract.addPayee([addr3.address], [4])
+				).to.be.revertedWith("PaySplitter: account already has weights");
+		});
 	});
 });
