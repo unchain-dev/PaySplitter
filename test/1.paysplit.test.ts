@@ -150,5 +150,14 @@ describe("PaySplitter contract", function () {
 			})
 			).to.be.revertedWith("You need one payee at least");
 		});
+		it("Should fail if non admin tries to do addPayee", async function () {
+			let adminHexString: string = await contract.DEFAULT_ADMIN_ROLE();
+			// let errMsg: string = "AccessControl: account " + String(ethers.utils.getAddress(addr1.address)) + " is missing role " + adminHexString;
+			let errMsg: string = "AccessControl: account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8" + " is missing role " + adminHexString;
+			// console.log(errMsg);
+			await expect(
+				contract.connect(addr1).addPayee([addr2.address, addr3.address], [3,4])
+				).to.be.revertedWith(errMsg);
+		});
 	});
 });
