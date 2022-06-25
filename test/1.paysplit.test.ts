@@ -127,9 +127,9 @@ describe("PaySplitter contract", function () {
 		it("Should fail if sender doesn’t send enough eth", async function () {
 			let etherString: string = "0";
 			await expect(
-			contract.deposit({
-				value: ethers.utils.parseEther(etherString)
-			})
+				contract.deposit({
+					value: ethers.utils.parseEther(etherString)
+				})
 			).to.be.revertedWith("The value must be bigger than 0");
 			await expect(
 				addr1.sendTransaction({
@@ -145,9 +145,9 @@ describe("PaySplitter contract", function () {
 			await tx.wait()
 			let etherString: string = "1";
 			await expect(
-			contract.deposit({
-				value: ethers.utils.parseEther(etherString)
-			})
+				contract.deposit({
+					value: ethers.utils.parseEther(etherString)
+				})
 			).to.be.revertedWith("You need one payee at least");
 		});
 		it("Should fail if non admin tries to do addPayee", async function () {
@@ -179,6 +179,14 @@ describe("PaySplitter contract", function () {
 			await expect(
 				contract.addPayee([addr3.address], [4])
 				).to.be.revertedWith("PaySplitter: account already has weights");
+		});
+		it("Should fail if weights are not right", async function () {
+			await expect(
+				contract.addPayee([addr2.address, addr3.address], [0,4])
+				).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
+			await expect(
+				contract.addPayee([addr2.address], [10001])
+				).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
 		});
 	});
 });
