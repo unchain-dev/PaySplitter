@@ -122,7 +122,7 @@ describe("PaySplitter contract", function () {
 		});
 	});
 
-	describe("Transactions revert", function () {
+	describe("Transactions deposit revert", function () {
 
 		it("Should fail if sender doesn’t send enough eth", async function () {
 			let etherString: string = "0";
@@ -150,6 +150,9 @@ describe("PaySplitter contract", function () {
 				})
 			).to.be.revertedWith("You need one payee at least");
 		});
+	});
+
+	describe("Transactions addPayee revert", function () {
 		it("Should fail if non admin tries to do addPayee", async function () {
 			let adminHexString: string = await contract.DEFAULT_ADMIN_ROLE();
 			// let errMsg: string = "AccessControl: account " + String(ethers.utils.getAddress(addr1.address)) + " is missing role " + adminHexString;
@@ -157,36 +160,36 @@ describe("PaySplitter contract", function () {
 			// console.log(errMsg);
 			await expect(
 				contract.connect(addr1).addPayee([addr2.address, addr3.address], [3,4])
-				).to.be.revertedWith(errMsg);
+			).to.be.revertedWith(errMsg);
 		});
 		it("Should fail if admin tries to do addPayee with diffrent length args", async function () {
 			await expect(
 				contract.addPayee([addr2.address, addr3.address], [3,4,5])
-				).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
+			).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
 			await expect(
 				contract.addPayee([addr1.address, addr2.address, addr3.address], [3,4])
-				).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
+			).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
 		});
 		it("Should fail if admin tries to do addPayee with the address already added", async function () {
 			await expect(
 				contract.addPayee([addr2.address, addr1.address], [3,4])
-				).to.be.revertedWith("PaySplitter: account already has weights");
+			).to.be.revertedWith("PaySplitter: account already has weights");
 			await expect(
 				contract.addPayee([owner.address], [4])
-				).to.be.revertedWith("PaySplitter: account already has weights");
+			).to.be.revertedWith("PaySplitter: account already has weights");
 			let tx = await contract.addPayee([addr2.address, addr3.address], [3,4]);
 			await tx.wait();
 			await expect(
 				contract.addPayee([addr3.address], [4])
-				).to.be.revertedWith("PaySplitter: account already has weights");
+			).to.be.revertedWith("PaySplitter: account already has weights");
 		});
 		it("Should fail if weights are not right", async function () {
 			await expect(
 				contract.addPayee([addr2.address, addr3.address], [0,4])
-				).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
+			).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
 			await expect(
 				contract.addPayee([addr2.address], [10001])
-				).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
+			).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
 		});
 	});
 });
