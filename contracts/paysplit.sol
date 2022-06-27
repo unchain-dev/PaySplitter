@@ -153,8 +153,8 @@ contract PaySplitter is
             _payee[account].weight > 0,
             "PaySplitter: account has no weights"
         );
-        _deleteAddress(account, payeesLen);
         _totalWeights -= _payee[account].weight;
+        _deleteAddress(account, payeesLen);
         delete _payee[account];
     }
 
@@ -227,8 +227,8 @@ contract PaySplitter is
 
         require(payment != 0, "PaySplitter: account is not due payment");
 
-        AddressUpgradeable.sendValue(account, payment);
         _payee[account].balance = 0;
+        AddressUpgradeable.sendValue(account, payment);
         emit PaymentReleased(account, payment);
     }
 
