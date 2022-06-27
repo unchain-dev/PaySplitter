@@ -192,4 +192,46 @@ describe("PaySplitter contract", function () {
 			).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
 		});
 	});
+
+	describe("Transactions deletePayee revert", function () {
+		it("Should fail if non admin tries to do deletePayee", async function () {
+			let adminHexString: string = await contract.DEFAULT_ADMIN_ROLE();
+			// let errMsg: string = "AccessControl: account " + String(ethers.utils.getAddress(addr1.address)) + " is missing role " + adminHexString;
+			let errMsg: string = "AccessControl: account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8" + " is missing role " + adminHexString;
+			// console.log(errMsg);
+			await expect(
+				contract.connect(addr1).deletePayee(addr1.address)
+			).to.be.revertedWith(errMsg);
+		});
+	
+		it("Should fail if there is no payees when deletePayee", async function () {
+			let tx = await contract.deletePayee(owner.address);
+			await tx.wait();
+			tx = await contract.deletePayee(addr1.address);
+			await tx.wait();
+			await expect(
+				contract.deletePayee(owner.address)
+			).to.be.revertedWith("PaySplitter: no payees");
+		});
+
+		it("Should fail if there is still balance when deletePayee", async function () {
+			let etherString: string = "1";
+			let wei: BigNumber = ethers.utils.parseEther(etherString);
+			let tx = await contract.deposit({
+					value: wei
+				});
+			await tx.wait();
+			await expect(
+				contract.deletePayee(owner.address)
+			).to.be.revertedWith("PaySplitter: There is balance in the account");
+		});
+
+		it("Should fail if there is not the payees when deletePayee", async function () {
+			let tx = await contract.deletePayee(addr1.address);
+			await tx.wait();
+			await expect(
+				contract.deletePayee(addr1.address)
+			).to.be.revertedWith("PaySplitter: account has no weights");
+		});
+	});
 });
