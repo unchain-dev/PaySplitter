@@ -234,4 +234,23 @@ describe("PaySplitter contract", function () {
 			).to.be.revertedWith("PaySplitter: account has no weights");
 		});
 	});
+	
+	describe("Transactions release revert", function () {
+		it("Should fail if non payee tries to release", async function () {
+			await expect(
+				contract.connect(addr2).release()
+			).to.be.revertedWith("PaySplitter: account has no weights");
+		});
+		it("Should fail if payee doesn't have balance", async function () {
+			let tx = await contract.deposit({
+				value: ethers.utils.parseEther("1")
+			});
+			await tx.wait();
+			tx = await contract.connect(addr1).release();
+			await tx.wait();
+			await expect(
+				contract.connect(addr1).release()
+			).to.be.revertedWith("PaySplitter: account is not due payment");
+		});
+	});
 });
