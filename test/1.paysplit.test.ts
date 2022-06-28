@@ -3,7 +3,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { BigNumber, Contract } from "ethers";
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
-import { calculateBalance, subtracteWei, addWei } from './utils/calculate'
+import { calculateBalance } from './utils/calculate'
 import { string } from "hardhat/internal/core/params/argumentTypes";
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them
@@ -25,20 +25,26 @@ describe("PaySplitter contract", function () {
 	let addr1: SignerWithAddress;
 	let addr2: SignerWithAddress;
 	let addr3: SignerWithAddress;
-	let addrs: SignerWithAddress[];
+	let payeeAddress: string[];
 	let ownerWeight: number = 6;
 	let weight1: number = 4;
 	let weight2: number = 2;
 	let weight3: number = 8;
+	let weights: number[];
+	let totalWeight: number;
+	let totalBalance: BigNumber;
 	// `beforeEach` will run before each test, re-deploying the contract every
 	// time. It receives a callback, which can be async.
 
 	beforeEach(async function () {
 		// Get the ContractFactory and Signers here.
+		totalWeight = 0;
+		totalBalance = BigNumber.from("0");
 		PaySplitter = await ethers.getContractFactory("PaySplitter");
-		[owner, addr1, addr2, addr3, ...addrs] = await ethers.getSigners();
-
+		[owner, addr1, addr2, addr3] = await ethers.getSigners();
 		contract = await PaySplitter.deploy([owner.address, addr1.address], [ownerWeight,weight1]);
+		payeeAddress = Array(owner.address, addr1.address);
+		weights = Array(ownerWeight,weight1);
 	});
 
 	describe("Deployment", function () {
@@ -67,13 +73,14 @@ describe("PaySplitter contract", function () {
 		it("Should deposit properly", async function () {
 			let etherString: string = "1";
 			let wei: BigNumber = ethers.utils.parseEther(etherString)
+			totalBalance = totalBalance.add(wei);
 			let tx = await contract.deposit({
 					value: wei
 				});
 			await tx.wait();
-			expect(await contract.totalBalance()).to.equal(wei);
+			expect(await contract.totalBalance()).to.equal(totalBalance);
 			
-			let totalWeight: number = ownerWeight + weight1;
+			totalWeight = ownerWeight + weight1;
 
 			wei = await calculateBalance(etherString, totalWeight, ownerWeight);
 			expect(await contract.balance(owner.address)).to.equal(wei);
@@ -107,8 +114,8 @@ describe("PaySplitter contract", function () {
 				value: wei
 			});
 			let receipt = await tx.wait();
-			let totalBalance: BigNumber = await contract.totalBalance();
-			let totalWeight: number = ownerWeight + weight1;
+			totalBalance = totalBalance.add(wei);
+			totalWeight = ownerWeight + weight1;
 
 			wei = await calculateBalance(etherString, totalWeight, ownerWeight);
 			// let beforeReleaseBalance = await owner.getBalance();
@@ -118,7 +125,7 @@ describe("PaySplitter contract", function () {
 			// expect(await addWei(await owner.getBalance(), releaseGasUsed)).to.equal(await addWei(beforeReleaseBalance, wei))
 			expect(await contract.balance(owner.address)).to.equal(0);
 	
-			expect(await contract.totalBalance()).to.equal(await subtracteWei(totalBalance, wei));
+			expect(await contract.totalBalance()).to.equal(await totalBalance.sub(wei));
 		});
 	});
 
@@ -252,5 +259,47 @@ describe("PaySplitter contract", function () {
 				contract.connect(addr1).release()
 			).to.be.revertedWith("PaySplitter: account is not due payment");
 		});
+	});
+
+	describe("Transactions various cases", function () {
+		it("various case 1 ", async function () {
+			let etherString: string = "1";
+			let wei: BigNumber = ethers.utils.parseEther(etherString)
+			let tx = await contract.deposit({
+					value: wei
+				});
+			await tx.wait();
+			expect(await contract.totalBalance()).to.equal(wei);
+			
+			totalWeight = ownerWeight + weight1;
+
+			wei = await calculateBalance(etherString, totalWeight, ownerWeight);
+			expect(await contract.balance(owner.address)).to.equal(wei);
+			let wei1: BigNumber = await calculateBalance(etherString, totalWeight, weight1);
+			
+			tx = await contract.addPayee([addr2.address, addr3.address], [weight2, weight3]);
+			await tx.wait();
+			totalWeight += weight2 + weight3;
+
+			expect(await contract.totalWeights()).to.equal(totalWeight);
+
+			tx = await contract.release();
+			await tx.wait();
+
+			expect(await contract.balance(owner.address)).to.equal(0);
+
+			await addr1.sendTransaction({
+				to: contract.address,
+				value: ethers.utils.parseEther(etherString)
+			});
+
+			wei = await calculateBalance(etherString, totalWeight, ownerWeight);
+			expect(await contract.balance(owner.address)).to.equal(wei);
+			wei = await calculateBalance(etherString, totalWeight, weight1);
+			expect(await contract.balance(addr1.address)).to.equal(await wei.add(wei1));
+
+			await expect(contract.deletePayee(owner.address)).to.be.revertedWith("PaySplitter: There is balance in the account");
+		});
+		
 	});
 });
