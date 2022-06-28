@@ -4,7 +4,6 @@ import { ethers } from "hardhat";
 import { BigNumber, Contract } from "ethers";
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { calculateBalance } from './utils/calculate'
-import { string } from "hardhat/internal/core/params/argumentTypes";
 // `describe` is a Mocha function that allows you to organize your tests. It's
 // not actually needed, but having your tests organized makes debugging them
 // easier. All Mocha functions are available in the global scope.
@@ -25,12 +24,10 @@ describe("PaySplitter contract", function () {
 	let addr1: SignerWithAddress;
 	let addr2: SignerWithAddress;
 	let addr3: SignerWithAddress;
-	let payeeAddress: string[];
 	let ownerWeight: number = 6;
 	let weight1: number = 4;
 	let weight2: number = 2;
 	let weight3: number = 8;
-	let weights: number[];
 	let totalWeight: number;
 	let totalBalance: BigNumber;
 	// `beforeEach` will run before each test, re-deploying the contract every
@@ -43,8 +40,6 @@ describe("PaySplitter contract", function () {
 		PaySplitter = await ethers.getContractFactory("PaySplitter");
 		[owner, addr1, addr2, addr3] = await ethers.getSigners();
 		contract = await PaySplitter.deploy([owner.address, addr1.address], [ownerWeight,weight1]);
-		payeeAddress = Array(owner.address, addr1.address);
-		weights = Array(ownerWeight,weight1);
 	});
 
 	describe("Deployment", function () {
