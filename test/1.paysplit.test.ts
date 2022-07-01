@@ -1,7 +1,7 @@
 // We import Chai to use its asserting functions here.
 import { expect } from "chai";
-import { ethers } from "hardhat";
-import { BigNumber, Contract } from "ethers";
+import { ethers, upgrades } from "hardhat";
+import { BigNumber, Contract, ContractFactory } from "ethers";
 import type { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { calculateBalance } from './utils/calculate'
 // `describe` is a Mocha function that allows you to organize your tests. It's
@@ -18,7 +18,7 @@ describe("PaySplitter contract", function () {
 	// up after they run.
 	// A common pattern is to declare some variables, and assign them in the
 	// `before` and `beforeEach` callbacks.
-	let PaySplitter;
+	let PaySplitterFactory: ContractFactory;
 	let contract: Contract;
 	let owner: SignerWithAddress;
 	let addr1: SignerWithAddress;
@@ -37,9 +37,9 @@ describe("PaySplitter contract", function () {
 		// Get the ContractFactory and Signers here.
 		totalWeight = 0;
 		totalBalance = BigNumber.from("0");
-		PaySplitter = await ethers.getContractFactory("PaySplitter");
+		PaySplitterFactory = await ethers.getContractFactory("PaySplitter");
 		[owner, addr1, addr2, addr3] = await ethers.getSigners();
-		contract = await PaySplitter.deploy([owner.address, addr1.address], [ownerWeight,weight1]);
+		contract = await upgrades.deployProxy(PaySplitterFactory, [[owner.address, addr1.address], [ownerWeight, weight1]]);
 	});
 
 	describe("Deployment", function () {
@@ -126,7 +126,7 @@ describe("PaySplitter contract", function () {
 
 	describe("Transactions deposit revert", function () {
 
-		it("Should fail if sender doesn’t send enough eth", async function () {
+		it("Should fail if sender doesn't send enough eth", async function () {
 			let etherString: string = "0";
 			await expect(
 				contract.deposit({
