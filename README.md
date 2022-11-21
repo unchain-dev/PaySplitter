@@ -33,9 +33,3 @@ Verify on Etherscan:
 ```zsh
 npx hardhat verify --network [YOUR_NETWORK] [DEPLOYED_CONTRACT_ADDRESS]
 ```
-
-TODO:
-
-- [x] write markdown
-- [x] create shortcut scripts
-- [ ] create repo for tomo
