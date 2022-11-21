@@ -15,18 +15,15 @@ contract PaySplitter is
     AccessControlUpgradeable,
     UUPSUpgradeable
 {
-    // main initializer
-    function initialize(
-        address[] memory payees,
-        uint256[] memory weight_
-    ) public initializer {
+    // Main initializer
+    function initialize() public initializer {
         __AccessControl_init();
         __UUPSUpgradeable_init();
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        __PaymentSplitter_init(payees, weight_);
+        __PaymentSplitter_init();
     }
 
-    // if contract implementation must be updated later
+    // For use if contract implementation must be updated later
     function _authorizeUpgrade(
         address newImplementation
     ) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
@@ -44,10 +41,7 @@ contract PaySplitter is
      * All address in `payees` must be non-zero. There must be the one weight assigned per one payee.
      * There must be no duplicates in `payees`.
      */
-    function __PaymentSplitter_init(
-        address[] memory payees,
-        uint256[] memory weight_
-    ) internal onlyInitializing {
+    function __PaymentSplitter_init() internal onlyInitializing {
         /////////////////////////////////
         ///// INITIALIZER CODE HERE /////
         /////////////////////////////////
