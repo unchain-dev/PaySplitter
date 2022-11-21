@@ -1,1 +1,8 @@
+artifacts
+coverage
+.openzeppelin
+
 node_modules
+
+contracts/types
+dist
