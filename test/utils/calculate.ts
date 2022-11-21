@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 export const calculateBalance = async (
   etherString: string,
   totalWeight: number,
-  weight: number
+  weight: number,
 ) => {
   let etherNumber = Number(etherString);
   etherNumber = (etherNumber * weight) / totalWeight;

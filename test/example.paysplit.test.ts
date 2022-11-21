@@ -1,7 +1,8 @@
-import { expect } from "chai";
-import { ethers, upgrades } from "hardhat";
-import { BigNumber, Contract, ContractFactory } from "ethers";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { BigNumber, Contract, ContractFactory } from "ethers";
+import { ethers, upgrades } from "hardhat";
+
 import { calculateBalance } from "./utils/calculate";
 
 // Mocha has four functions that let you hook into the the test runner's lifecyle: `before`, `beforeEach`, `after`, `afterEach`.
@@ -28,14 +29,11 @@ describe("PaySplitter contract", function () {
     totalBalance = BigNumber.from("0");
     PaySplitterFactory = await ethers.getContractFactory("PaySplitter");
     [owner, addr1, addr2, addr3] = await ethers.getSigners();
-    contract = await upgrades.deployProxy(PaySplitterFactory, [
-      [owner.address, addr1.address],
-      [ownerWeight, weight1],
-    ]);
+    contract = await upgrades.deployProxy(PaySplitterFactory);
   });
 
   describe("Deployment", function () {
-    it("Should set the right each weights", async function () {
+    it("Should set each weights correctly", async function () {
       expect(await contract.weight(owner.address)).to.equal(ownerWeight);
       expect(await contract.weight(addr1.address)).to.equal(weight1);
     });
@@ -43,16 +41,11 @@ describe("PaySplitter contract", function () {
       expect(await contract.totalWeights()).to.equal(ownerWeight + weight1);
     });
     it("Should set the right address", async function () {
-      expect(await contract.payee(0)).to.equal(owner.address);
       expect(await contract.payee(1)).to.equal(addr1.address);
     });
     it("Should set the right role", async function () {
       const adminRole = await contract.DEFAULT_ADMIN_ROLE();
-      const upgraderRole = await contract.UPGRADER_ROLE();
       expect(await contract.hasRole(adminRole, owner.address)).to.equal(true);
-      expect(await contract.hasRole(upgraderRole, owner.address)).to.equal(
-        true
-      );
     });
   });
 
@@ -78,11 +71,11 @@ describe("PaySplitter contract", function () {
     it("Should add payees properly", async function () {
       let tx = await contract.addPayee(
         [addr2.address, addr3.address],
-        [weight2, weight3]
+        [weight2, weight3],
       );
       await tx.wait();
       expect(await contract.totalWeights()).to.equal(
-        ownerWeight + weight1 + weight2 + weight3
+        ownerWeight + weight1 + weight2 + weight3,
       );
       expect(await contract.weight(addr2.address)).to.equal(weight2);
       expect(await contract.weight(addr3.address)).to.equal(weight3);
@@ -109,15 +102,12 @@ describe("PaySplitter contract", function () {
       totalWeight = ownerWeight + weight1;
 
       wei = await calculateBalance(etherString, totalWeight, ownerWeight);
-      // let beforeReleaseBalance = await owner.getBalance();
       tx = await contract.release();
       receipt = await tx.wait();
-      // let releaseGasUsed = receipt.gasUsed;
-      // expect(await addWei(await owner.getBalance(), releaseGasUsed)).to.equal(await addWei(beforeReleaseBalance, wei))
       expect(await contract.balance(owner.address)).to.equal(0);
 
       expect(await contract.totalBalance()).to.equal(
-        await totalBalance.sub(wei)
+        await totalBalance.sub(wei),
       );
     });
   });
@@ -128,13 +118,13 @@ describe("PaySplitter contract", function () {
       await expect(
         contract.deposit({
           value: ethers.utils.parseEther(etherString),
-        })
+        }),
       ).to.be.revertedWith("The value must be bigger than 0");
       await expect(
         addr1.sendTransaction({
           to: contract.address,
           value: ethers.utils.parseEther(etherString),
-        })
+        }),
       ).to.be.revertedWith("The value must be bigger than 0");
     });
     it("Should fail if there is no payees when deposit", async function () {
@@ -146,7 +136,7 @@ describe("PaySplitter contract", function () {
       await expect(
         contract.deposit({
           value: ethers.utils.parseEther(etherString),
-        })
+        }),
       ).to.be.revertedWith("You need one payee at least");
     });
   });
@@ -154,40 +144,45 @@ describe("PaySplitter contract", function () {
   describe("Transactions addPayee revert", function () {
     it("Should fail if non admin tries to do addPayee", async function () {
       let adminHexString: string = await contract.DEFAULT_ADMIN_ROLE();
-      // let errMsg: string = "AccessControl: account " + String(ethers.utils.getAddress(addr1.address)) + " is missing role " + adminHexString;
-      let errMsg = `AccessControl: account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 is missing role ${adminHexString}`;
-      // console.log(errMsg);
+      let errMsg = `AccessControl: account ${String(
+        ethers.utils.getAddress(addr1.address),
+      )} is missing role ${adminHexString}`;
       await expect(
-        contract.connect(addr1).addPayee([addr2.address, addr3.address], [3, 4])
+        contract
+          .connect(addr1)
+          .addPayee([addr2.address, addr3.address], [3, 4]),
       ).to.be.revertedWith(errMsg);
     });
     it("Should fail if admin tries to do addPayee with diffrent length args", async function () {
       await expect(
-        contract.addPayee([addr2.address, addr3.address], [3, 4, 5])
+        contract.addPayee([addr2.address, addr3.address], [3, 4, 5]),
       ).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
       await expect(
-        contract.addPayee([addr1.address, addr2.address, addr3.address], [3, 4])
+        contract.addPayee(
+          [addr1.address, addr2.address, addr3.address],
+          [3, 4],
+        ),
       ).to.be.revertedWith("PaySplitter: payees and weights length mismatch");
     });
     it("Should fail if admin tries to do addPayee with the address already added", async function () {
       await expect(
-        contract.addPayee([addr2.address, addr1.address], [3, 4])
+        contract.addPayee([addr2.address, addr1.address], [3, 4]),
       ).to.be.revertedWith("PaySplitter: account already has weights");
       await expect(contract.addPayee([owner.address], [4])).to.be.revertedWith(
-        "PaySplitter: account already has weights"
+        "PaySplitter: account already has weights",
       );
       let tx = await contract.addPayee([addr2.address, addr3.address], [3, 4]);
       await tx.wait();
       await expect(contract.addPayee([addr3.address], [4])).to.be.revertedWith(
-        "PaySplitter: account already has weights"
+        "PaySplitter: account already has weights",
       );
     });
     it("Should fail if weights are not right", async function () {
       await expect(
-        contract.addPayee([addr2.address, addr3.address], [0, 4])
+        contract.addPayee([addr2.address, addr3.address], [0, 4]),
       ).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
       await expect(
-        contract.addPayee([addr2.address], [10001])
+        contract.addPayee([addr2.address], [10001]),
       ).to.be.revertedWith("PaySplitter: 0 < weight <= 10000");
     });
   });
@@ -195,11 +190,11 @@ describe("PaySplitter contract", function () {
   describe("Transactions deletePayee revert", function () {
     it("Should fail if non admin tries to do deletePayee", async function () {
       let adminHexString: string = await contract.DEFAULT_ADMIN_ROLE();
-      // let errMsg: string = "AccessControl: account " + String(ethers.utils.getAddress(addr1.address)) + " is missing role " + adminHexString;
-      let errMsg = `AccessControl: account 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 is missing role ${adminHexString}`;
-      // console.log(errMsg);
+      let errMsg = `AccessControl: account ${String(
+        ethers.utils.getAddress(addr1.address),
+      )} is missing role ${adminHexString}`;
       await expect(
-        contract.connect(addr1).deletePayee(addr1.address)
+        contract.connect(addr1).deletePayee(addr1.address),
       ).to.be.revertedWith(errMsg);
     });
 
@@ -209,7 +204,7 @@ describe("PaySplitter contract", function () {
       tx = await contract.deletePayee(addr1.address);
       await tx.wait();
       await expect(contract.deletePayee(owner.address)).to.be.revertedWith(
-        "PaySplitter: no payees"
+        "PaySplitter: no payees",
       );
     });
 
@@ -221,7 +216,7 @@ describe("PaySplitter contract", function () {
       });
       await tx.wait();
       await expect(contract.deletePayee(owner.address)).to.be.revertedWith(
-        "PaySplitter: There is balance in the account"
+        "PaySplitter: There is balance in the account",
       );
     });
 
@@ -229,7 +224,7 @@ describe("PaySplitter contract", function () {
       let tx = await contract.deletePayee(addr1.address);
       await tx.wait();
       await expect(contract.deletePayee(addr1.address)).to.be.revertedWith(
-        "PaySplitter: account has no weights"
+        "PaySplitter: account has no weights",
       );
     });
   });
@@ -237,7 +232,7 @@ describe("PaySplitter contract", function () {
   describe("Transactions release revert", function () {
     it("Should fail if non payee tries to release", async function () {
       await expect(contract.connect(addr2).release()).to.be.revertedWith(
-        "PaySplitter: account has no weights"
+        "PaySplitter: account has no weights",
       );
     });
     it("Should fail if payee doesn't have balance", async function () {
@@ -248,7 +243,7 @@ describe("PaySplitter contract", function () {
       tx = await contract.connect(addr1).release();
       await tx.wait();
       await expect(contract.connect(addr1).release()).to.be.revertedWith(
-        "PaySplitter: account is not due payment"
+        "PaySplitter: account is not due payment",
       );
     });
   });
@@ -270,12 +265,12 @@ describe("PaySplitter contract", function () {
       let wei1: BigNumber = await calculateBalance(
         etherString,
         totalWeight,
-        weight1
+        weight1,
       );
 
       tx = await contract.addPayee(
         [addr2.address, addr3.address],
-        [weight2, weight3]
+        [weight2, weight3],
       );
       await tx.wait();
       totalWeight += weight2 + weight3;
@@ -296,11 +291,11 @@ describe("PaySplitter contract", function () {
       expect(await contract.balance(owner.address)).to.equal(wei);
       wei = await calculateBalance(etherString, totalWeight, weight1);
       expect(await contract.balance(addr1.address)).to.equal(
-        await wei.add(wei1)
+        await wei.add(wei1),
       );
 
       await expect(contract.deletePayee(owner.address)).to.be.revertedWith(
-        "PaySplitter: There is balance in the account"
+        "PaySplitter: There is balance in the account",
       );
     });
   });
