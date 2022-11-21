@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@openzeppelin/hardhat-upgrades";
-import "@nomiclabs/hardhat-ethers"
+import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-etherscan";
 import "@typechain/hardhat";
@@ -21,9 +21,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-
 const config: HardhatUserConfig = {
-  solidity: "0.8.4",
+  solidity: "0.8.17",
   networks: {
     eth_mainnet: {
       url: process.env.MAINNET_URL || "",
@@ -36,10 +35,14 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     ropsten: {
-        url: process.env.ROPSTEN_URL || "",
-        accounts:
-            process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      url: process.env.ROPSTEN_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
+  },
+  typechain: {
+    outDir: "contracts/types",
+    target: "ethers-v5",
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
