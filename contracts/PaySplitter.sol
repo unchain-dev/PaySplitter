@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.17;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
@@ -37,10 +37,10 @@ contract PaySplitter is
     //     initialize(payees, weight_);
     // }
 
-    function initialize(address[] memory payees, uint256[] memory weight_)
-        public
-        initializer
-    {
+    function initialize(
+        address[] memory payees,
+        uint256[] memory weight_
+    ) public initializer {
         __AccessControl_init();
         __UUPSUpgradeable_init();
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -48,20 +48,15 @@ contract PaySplitter is
         __PaymentSplitter_init(payees, weight_);
     }
 
-    function _authorizeUpgrade(address newImplementation)
-        internal
-        override
-        onlyRole(UPGRADER_ROLE)
-    {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyRole(UPGRADER_ROLE) {}
 
     // The following functions are overrides required by Solidity.
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(AccessControlUpgradeable)
-        returns (bool)
-    {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(AccessControlUpgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -101,10 +96,10 @@ contract PaySplitter is
         addPayee(payees, weight_);
     }
 
-    function addPayee(address[] memory payees, uint256[] memory weight_)
-        public
-        onlyRole(DEFAULT_ADMIN_ROLE)
-    {
+    function addPayee(
+        address[] memory payees,
+        uint256[] memory weight_
+    ) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(
             payees.length == weight_.length,
             "PaySplitter: payees and weights length mismatch"
