@@ -21,7 +21,7 @@ git clone git@github.com:unchain-dev/brightmoments-paymentsplitter.git
    - a) sender は、recipientA が **X $TOKEN**, recipientB が **Y $TOKEN**、recipientC が Z $TOKEN を、それぞれ claim できるよう **K $TOKEN** 入金できる。この時、以下が成り立つ。
      - **K** = (**X**+**Y**+**Z**)
      - {**K**,**X**,**Y**,**Z**} ∈ **ℝ**
-     - 0 < {**K**,**X**,**Y**,**Z**} )
+     - 0 < {**K**,**X**,**Y**,**Z**}
    - b) 全ての recipient はそれぞれの任意のタイミングで自身の分け前を claim できる
 
 ## 判定項目（優先順）
