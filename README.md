@@ -18,7 +18,7 @@ git clone git@github.com:unchain-dev/PaySplitter.git
 2. `PaySplitter.sol` 45 行目には、コントラクトをインスタンス化する際の初期設定を記述しよう。(payee, weight を設定しよう)
 3. `PaySplitter.sol` 49 行目には、スマートコントラクトを用いた収益分配のロジックを実装しよう。セキュリティと使いやすさの両方を意識した実装が求められる。\
    要件定義:
-   - a) sender は、recipientA が **X $TOKEN**, recipientB が **Y $TOKEN**、recipientC が Z $TOKEN を、それぞれ claim できるよう **K $TOKEN** 入金できる。この時、以下が成り立つ。
+   - a) sender は、recipientA が **X $TOKEN**, recipientB が **Y $TOKEN**、recipientC が **Z $TOKEN** を、それぞれ claim できるよう **K $TOKEN** 入金できる。この時、以下が成り立つ。
      - **K** = (**X**+**Y**+**Z**)
      - {**K**,**X**,**Y**,**Z**} ∈ **ℝ**
      - 0 < {**K**,**X**,**Y**,**Z**}
