@@ -5,7 +5,7 @@ Paysplit is an ethereum smart contract which allows the secure distribution of E
 ## Clone the repository
 
 ```zsh
-git clone git@github.com:unchain-dev/brightmoments-paymentsplitter.git
+git clone git@github.com:unchain-dev/PaySplitter.git
 ```
 
 - コントラクト: `contracts/PaySplitter.sol`
