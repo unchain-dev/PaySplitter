@@ -235,7 +235,7 @@ contract PaySplitter is
     function _getAllPayee(uint id) public view returns(Payee[] memory allPayee_) {
         (allPayee_,) = _getAllPayeeAndLength(id);
     }
-    
+
     function _getAllPayeeAndLength(uint id) private view returns(Payee[] memory allPayee_, uint256 length_) {
         allPayee_ = allPayees[id];
         length_ = allPayee_.length;
@@ -320,6 +320,7 @@ contract PaySplitter is
                 
             } else {
                 if(msg.value != 0) revert ("MSG.VALUE > 0");
+                // transferごとにfeeを徴収するtokenはamountが送られてきたtokenの量とは限らない
                 uint beforeBalance = IERC20Upgradeable(token).balanceOf(to);
                 IERC20Upgradeable(token).safeTransfer(to,amount);
                 uint afterBalance = IERC20Upgradeable(token).balanceOf(to);
