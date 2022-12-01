@@ -9,6 +9,7 @@ dist
 #Hardhat files
 cache
 artifacts
+contracts/types
 
 #misc
 .DS_Store
