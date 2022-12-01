@@ -231,7 +231,11 @@ contract PaySplitter is
         if(isPayee[id][payeeAddress]) return true;
         return false;
     }
-
+    
+    function _getAllPayee(uint id) public view returns(Payee[] memory allPayee_) {
+        (allPayee_,) = _getAllPayeeAndLength(id);
+    }
+    
     function _getAllPayeeAndLength(uint id) private view returns(Payee[] memory allPayee_, uint256 length_) {
         allPayee_ = allPayees[id];
         length_ = allPayee_.length;
