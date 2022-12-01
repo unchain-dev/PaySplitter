@@ -98,7 +98,6 @@ contract PaySplitter is
     //////////////////////////////////////////////////////////////////////////////
 
     function addPayee(uint id, Payee[] memory payees) external onlyRole(DEFAULT_ADMIN_ROLE) {    
-        if(id > allPayees.length) revert("NOT EXIST");
 
         Payee[] memory allPayee = allPayees[id];
         uint length = payees.length;
