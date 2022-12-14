@@ -4,11 +4,13 @@ node_modules
 coverage
 coverage.json
 typechain
+contracts/types
 dist
 
 #Hardhat files
 cache
 artifacts
+
 
 #misc
 .DS_Store
