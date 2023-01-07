@@ -52,6 +52,7 @@ contract PaySplitter_Haku is
         /////////////////////////////////
     }
 
+    // @note custom modifier活用するのはいいプラクティスです
     modifier onlyClaimable() {
         require(claimable, "only Claimable");
         _;
@@ -102,15 +103,22 @@ contract PaySplitter_Haku is
                 amount(payees_[i]) != 0,
                 "PaySplitter: account doesn't have amounts"
             );
-            totalAmounts -= amounts[payees_[i]];
-            totalAmounts += amounts_[i];
-            amounts[payees_[i]] = amounts_[i];
+            totalAmounts -= amounts[payees_[i]]; //まず既存の残高を減産し
+            totalAmounts += amounts_[i]; // 新しい残高を加算する
+            amounts[payees_[i]] = amounts_[i]; // 最後に新しい残高をstorageに反映
+            //@note iが2^256オーバーフローになることはほぼあり得ないので、
+            // 102行目の i++ の代わりに以下のようにuncheckでインクリメントするとガス節約できる。
+            // for loop全体をuncheckするというパターンもあるが、amountsなんかはオーバーフローの可能性が
+            // あると思うのでそこまでしなくていいかも。
+            //unchecked {
+            //    i++;
+            //}
         }
     }
 
     function deletePayeeInternal(address payees_) internal {
         uint payeeAmount = amount(payees_);
-        require(payeeAmount > 0, "PaySplitter: account has no amounts");
+        require(payeeAmount > 0, "PaySplitter: account has no amount");
         totalAmounts -= payeeAmount;
         amounts[payees_] = 0;
     }
@@ -118,7 +126,8 @@ contract PaySplitter_Haku is
     function deletePayee(
         address[] memory payees_
     ) external onlyRole(DEFAULT_ADMIN_ROLE) onlyNotClaimable {
-        require(totalAmounts > 0, "PaySplitter: no payees");
+        // @note totalAmounts > 0 でも問題はなさそうだが、チェックしたい内容としては payees.length > 0 の方が正確なのでは？
+        require(totalAmounts > 0, "PaySplitter: no payees to delete");
         for (uint i = 0; i < payees_.length; i++) {
             deletePayeeInternal(payees_[i]);
         }
@@ -142,6 +151,7 @@ contract PaySplitter_Haku is
         require(sent, "Failed to send Ether");
     }
 
+    // @note 一つのdepositに対して対象payeeが全員claim()し、その後cleanup()するまで次のdepositはできない仕様になっている
     function receiveEtherInternal() internal onlyNotClaimable {
         require(msg.value > 0, "The value must be bigger than 0");
         require(totalAmounts > 0, "You need one payee at least");
@@ -154,6 +164,7 @@ contract PaySplitter_Haku is
         }
     }
 
+    // @note 172行目のfallback()があるのにあえてdeposit()を用意するのはどういう意図なのでしょう
     function deposit() external payable {
         receiveEtherInternal();
     }
@@ -168,4 +179,10 @@ contract PaySplitter_Haku is
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
      */
     uint256[43] private __gap;
+
+    ////////////// sho コメント ////////////////
+    // @note 全体的に綺麗なコードだと思いました。
+    // 資金取り扱いに際してmodifierやrequire文を十分に活用しながら、
+    // 目的とする動作を実現していることがわかります。
+    //
 }

@@ -6,7 +6,8 @@ import { ethers, upgrades } from "hardhat";
 import type { PaySplitter_Tomo } from "../contracts/types/contracts/tomo/PaySplitter.sol";
 import { calculateBalance } from "./utils/calculate";
 
-// Mocha has four functions that let you hook into the the test runner's lifecyle: `before`, `beforeEach`, `after`, `afterEach`.
+// テストを書くと動作確認をより網羅的且つシステマチックに行うことができるので良いです。
+// Boilerplateとしてセットアップだけ記述しておきます - sho
 
 describe("Tomo's PaySplitter", function () {
   let PaySplitterFactory: ContractFactory;
@@ -118,6 +119,6 @@ describe("Tomo's PaySplitter", function () {
   });
 
   ///////////////////////////////////
-  //// その他可能な限り網羅的なテスト ////
+  ////   以下テスト              //////
   ///////////////////////////////////
 });
